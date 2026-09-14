@@ -1,0 +1,116 @@
+<!doctype html><html lang="fr"><meta charset="utf-8">
+<title>Indice de maturité créative ADVE</title>
+<style>
+:root{--ink:#15171b;--body:#3a3f47;--mute:#6b7280;--line:#e3e0d8;--acc:#0f5e60;--acc-bg:#e6f0f0;
+--warn:#b4531f;--paper:#faf9f6;--card:#fff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--body);font:15px/1.55 -apple-system,"Helvetica Neue",Arial,sans-serif}
+header{padding:38px 34px 22px;border-bottom:2px solid var(--ink)}
+h1{margin:0;font-size:28px;color:var(--ink);letter-spacing:-.02em}
+.sub{color:var(--mute);font-size:13.5px;margin-top:8px;max-width:76ch}
+main{padding:26px 34px 80px;max-width:1080px}
+h2{font-size:17px;color:var(--ink);margin:26px 0 4px}
+.card{background:var(--card);border:1px solid var(--line);padding:18px 20px;margin-bottom:14px}
+.q{display:grid;grid-template-columns:1fr 190px;gap:14px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}
+.q:last-child{border-bottom:0}
+.q p{margin:0;font-size:14px}
+.q small{display:block;color:var(--mute);font-size:12px;margin-top:3px}
+select{width:100%;padding:8px 9px;border:1px solid var(--line);background:#fff;font:14px inherit;color:var(--ink)}
+.axe{font:600 11px/1 inherit;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);margin-bottom:2px}
+.result{background:var(--ink);color:#fff;padding:24px 26px;margin-top:24px}
+.result h3{margin:0 0 6px;font-size:15px;color:#e7c559;letter-spacing:.06em;text-transform:uppercase}
+.big{font-size:44px;font-weight:700;line-height:1.1;margin:6px 0}
+.lvl{font-size:19px;color:#e7c559;margin-bottom:12px}
+.presc{background:#fff;border:1px solid var(--line);padding:18px 20px;margin-top:14px}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 10.5px/1 inherit;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);background:#f4f2ec}
+tr.on td{background:var(--acc-bg);color:var(--ink);font-weight:600}
+.bars{display:grid;gap:8px;margin-top:14px}
+.bar{display:grid;grid-template-columns:120px 1fr 42px;gap:10px;align-items:center;font-size:12.5px}
+.track{height:9px;background:#2a2d33}.fill{height:9px;background:#e7c559}
+button{background:var(--ink);color:#fff;border:0;padding:11px 18px;font:600 13px inherit;cursor:pointer}
+.hint{font-size:12.5px;color:var(--mute);margin-top:10px}
+</style>
+<header>
+<h1>Indice de maturité créative ADVE</h1>
+<p class="sub">Le diagnostic d'entrée. Seize questions, quatre axes, un niveau de 0 à 5 — et une prescription :
+ce que la marque doit acheter ensuite, et pourquoi. C'est ce mécanisme qui rend la vente rationnelle
+plutôt que persuasive : le produit devient l'ordonnance du diagnostic.</p>
+</header>
+<main>
+<div class="card">
+  <label class="axe">Marque diagnostiquée</label>
+  <input id="marque" style="width:100%;padding:9px;border:1px solid var(--line);font:15px inherit" placeholder="Nom de la marque">
+</div>
+<div id="qs"></div>
+<p><button id="go">Calculer l'indice</button></p>
+<div id="out"></div>
+</main>
+<script>
+const AXES=[
+ {k:"AUTHENTICITÉ",q:[
+  ["La marque sait-elle dire ce qu'elle est et ne peut pas être ?","Une plateforme écrite, pas une intuition du dirigeant."],
+  ["Ses codes tiennent-ils quand un tiers produit à sa place ?","Un prestataire externe produit-il du reconnaissable ?"],
+  ["L'histoire d'origine est-elle exploitée en communication ?","Fondation, savoir-faire, territoire réel."],
+  ["Les prises de parole sont-elles cohérentes d'un canal à l'autre ?","Même marque en OOH, en digital et en point de vente."]]},
+ {k:"DISTINCTION",q:[
+  ["Reconnaît-on la marque sans voir son logo ?","Test du cache-logo sur les trois dernières sorties."],
+  ["Le territoire visuel est-il distinct de celui du concurrent direct ?","Nommer le concurrent et comparer."],
+  ["Existe-t-il un système graphique documenté ?","Charte appliquée, pas seulement dessinée."],
+  ["Les sorties rompent-elles le scroll dans leur catégorie ?","Constaté, pas supposé."]]},
+ {k:"VALEUR",q:[
+  ["Chaque campagne est-elle rattachée à un objectif business chiffré ?","Volume, part de marché, recrutement, trafic."],
+  ["Mesure-t-on quelque chose après diffusion ?","Un chiffre existe-t-il, même imparfait ?"],
+  ["Le coût par livrable est-il connu ?","Sinon aucun gain de productivité n'est démontrable."],
+  ["Le délai brief → livraison est-il suivi ?","La vitesse ne se vend que si elle se mesure."]]},
+ {k:"ENGAGEMENT",q:[
+  ["La marque a-t-elle un public qui revient de lui-même ?","Communauté, rituel, rendez-vous."],
+  ["Existe-t-il un rituel de marque récurrent ?","Temps fort possédé, pas seulement saisonnier."],
+  ["Le public produit-il du contenu pour la marque ?","UGC, ambassadeurs, relais spontanés."],
+  ["Y a-t-il un mécanisme de fidélisation actif ?","Programme, club, avantage réel."]]}];
+const NIV=[
+ [0,"Fragmenté","Aucun socle. Chaque sortie repart de zéro.","Cadrage de marque — plateforme et territoire. Rien d'autre n'est vendable avant."],
+ [1,"Réactif","La marque répond aux urgences, sans cap.","Cadrage + calendrier des temps forts. Sortir du coup par coup."],
+ [2,"Structuré","Un socle existe, l'exécution reste artisanale.","Système master → variantes marché → déclinaisons. Le gain est immédiat et mesurable."],
+ [3,"Industrialisé","La production tient à l'échelle.","Déploiement multi-marchés et capacité mensuelle garantie."],
+ [4,"Piloté","La marque mesure et corrige.","Boucle de performance : ce qui marche est rejoué, ce qui échoue est retiré."],
+ [5,"Autonome","Le système apprend sans son auteur.","Transmission et gouvernance. Le rôle devient celui d'un arbitre, pas d'un opérateur."]];
+const box=document.getElementById("qs");
+AXES.forEach((a,ai)=>{
+  const d=document.createElement("div"); d.className="card";
+  d.innerHTML=`<div class="axe">${a.k}</div>`+a.q.map((q,qi)=>
+   `<div class="q"><p>${q[0]}<small>${q[1]}</small></p>
+    <select data-a="${ai}"><option value="">—</option>
+    <option value="0">0 · inexistant</option><option value="1">1 · embryonnaire</option>
+    <option value="2">2 · partiel</option><option value="3">3 · en place</option>
+    <option value="4">4 · solide</option><option value="5">5 · exemplaire</option></select></div>`).join("");
+  box.appendChild(d);
+});
+document.getElementById("go").onclick=()=>{
+  const sc=[0,0,0,0], n=[0,0,0,0];
+  document.querySelectorAll("select").forEach(s=>{
+    if(s.value===""){return} const a=+s.dataset.a; sc[a]+=+s.value; n[a]++;
+  });
+  if(n.some(x=>x===0)){document.getElementById("out").innerHTML=
+    '<div class="presc" style="border-color:#b4531f;color:#b4531f">Réponds au moins une question par axe.</div>';return}
+  const moy=sc.map((s,i)=>s/n[i]), glob=moy.reduce((a,b)=>a+b,0)/4;
+  const lvl=NIV[Math.min(5,Math.round(glob))];
+  const faible=moy.indexOf(Math.min(...moy));
+  document.getElementById("out").innerHTML=
+  `<div class="result"><h3>${document.getElementById("marque").value||"Marque"} — niveau de maturité</h3>
+   <div class="big">${glob.toFixed(2)} / 5</div><div class="lvl">${lvl[0]} · ${lvl[1]}</div>
+   <p style="margin:0;color:#c9ccd1">${lvl[2]}</p>
+   <div class="bars">${AXES.map((a,i)=>
+     `<div class="bar"><span>${a.k}</span><span class="track"><span class="fill" style="width:${moy[i]/5*100}%"></span></span><span>${moy[i].toFixed(1)}</span></div>`).join("")}</div>
+   </div>
+   <div class="presc"><strong>Prescription — ce qu'il faut vendre ensuite</strong>
+   <p style="margin:8px 0 0">${lvl[3]}</p>
+   <p style="margin:10px 0 0;color:#6b7280;font-size:13px">Axe le plus faible : <b style="color:#0f5e60">${AXES[faible].k}</b>
+   (${moy[faible].toFixed(1)}/5). C'est par là que commence la mission, quel que soit le niveau global.</p>
+   <table><thead><tr><th>Niveau</th><th>État</th><th>Ce qui se vend</th></tr></thead><tbody>
+   ${NIV.map(v=>`<tr class="${v[0]===Math.min(5,Math.round(glob))?'on':''}"><td>${v[0]} · ${v[1]}</td><td>${v[2]}</td><td>${v[3]}</td></tr>`).join("")}
+   </tbody></table>
+   <p class="hint">Le diagnostic se facture. Un audit gratuit ne qualifie personne et coûte le plus cher en temps.</p></div>`;
+};
+</script></html>
