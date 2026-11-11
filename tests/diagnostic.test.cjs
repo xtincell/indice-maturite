@@ -43,3 +43,9 @@ test("a name is literal text in HTML and cannot inject report structure", () => 
   assert.match(md, /ADVE-AUTODIAGNOSTIC-1/);
   assert.equal((md.match(/\/5 déclaré/g) || []).length, 16);
 });
+test("questions, levels and method stay frozen for ADVE-AUTODIAGNOSTIC-1", () => {
+  const digest = require("node:crypto").createHash("sha256")
+    .update(JSON.stringify({ AXES: d.AXES, NIV: d.NIV, METHOD_VERSION: d.METHOD_VERSION })).digest("hex");
+  assert.equal(digest, "146440989870c3db8812f95e7d60e0899c3ae150bf42f8c2c37e3cf677e6c21d",
+    "Changer une question ou un niveau impose une nouvelle METHOD_VERSION.");
+});
