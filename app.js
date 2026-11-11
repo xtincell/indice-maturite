@@ -85,3 +85,11 @@ download.addEventListener("click", () => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 render();
+// Copie hors ligne après une première visite en http(s). En file://, la page est déjà locale.
+window.addEventListener("load", () => {
+  try {
+    if (/^https?:$/.test(location.protocol) && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  } catch { /* La page reste utilisable sans copie hors ligne. */ }
+});
