@@ -25,15 +25,29 @@ technologie reste derrière le rideau ; ici, elle est le livrable.
 ## Lancer
 
 Ouvrir `index.html` avec `diagnostic.js` et `app.js` à côté. Aucun serveur, aucune
-installation, aucun fournisseur IA. Les réponses se sauvegardent sur l'appareil
-quand le navigateur le permet ; un échec de sauvegarde reste visible.
+installation, aucun fournisseur IA, aucune ressource externe (polices système,
+scripts locaux) : la page fonctionne en `file://` sans réseau. Servie en ligne,
+elle garde après la première visite une copie de ses fichiers (`sw.js`, réseau
+d'abord) et se rouvre sans réseau ; une version publiée remplace la copie dès que
+le réseau revient. Aucune réponse n'est mise en cache ni envoyée.
+
+Les réponses se sauvegardent sur l'appareil quand le navigateur le permet. Si la
+sauvegarde locale est bloquée (navigation privée stricte, cookies désactivés,
+accès refusé), le questionnaire reste utilisable en mémoire et un message discret
+indique que la progression ne sera pas conservée. Une sauvegarde illisible reste
+intacte ; elle n'est jamais réécrite.
 
 **Conserver le bilan (.md)** produit un fichier daté avec la version de méthode,
 la marque, toutes les réponses et les inconnues. Il peut être ajouté aux sources
 du bon dossier La Fusée, sans nouveau référentiel de scores. Le fichier est une
 déclaration à examiner, pas une approbation ni une demande de génération.
 
-Vérification sans dépendance : `node --test tests/diagnostic.test.cjs`.
+Vérification sans dépendance (CI) : `node --test tests/*.test.cjs` — calcul,
+empreinte des questions, stockage indisponible, absence de ressource externe et
+copie hors ligne. Recette navigateur hors CI, Playwright requis mais non versionné :
+`NODE_PATH=<node_modules contenant playwright> node tests/recette-navigateur.cjs`
+(file://, réseau coupé, serveur arrêté, mise à jour publiée, trois indisponibilités
+du stockage, sauvegarde illisible, parcours complet jusqu'au score).
 
 ## Les quatre axes
 

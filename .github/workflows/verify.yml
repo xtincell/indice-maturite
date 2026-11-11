@@ -1,4 +1,4 @@
-name: Questionnaire et reprise
+name: Questionnaire, reprise et hors ligne
 on: [push, pull_request]
 permissions:
   contents: read
@@ -10,5 +10,5 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
-      - run: node --check diagnostic.js && node --check app.js
-      - run: node --test tests/diagnostic.test.cjs
+      - run: node --check diagnostic.js && node --check app.js && node --check sw.js && node --check tests/recette-navigateur.cjs
+      - run: node --test tests/*.test.cjs

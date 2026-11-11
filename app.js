@@ -1,13 +1,13 @@
 /* UI autonome : saisie manuelle, sauvegarde locale, bilan documentaire. */
 "use strict";
-const { AXES, METHOD_VERSION, TOTAL, diagnose, escapeHtml, readDraft, toMarkdown } = ADVEIndice;
+const { AXES, METHOD_VERSION, TOTAL, diagnose, escapeHtml, openDraftStore, toMarkdown } = ADVEIndice;
 const storageKey = "adve-indice-draft-1";
 const brand = document.getElementById("marque");
 const out = document.getElementById("out");
 const status = document.getElementById("save-status");
 const download = document.getElementById("download");
+const keepFile = "Conservez le bilan en fichier avant de quitter la page.";
 let showResult = false;
-let storageWritable = true;
 
 document.getElementById("qs").innerHTML = AXES.map((a, ai) =>
   `<section class="card" aria-label="${a.k}"><h2 class="axe">${a.k}</h2>` + a.q.map((q, qi) =>
@@ -43,27 +43,33 @@ function render() {
     <div class="presc"><h2>Prochaine décision à examiner</h2><p>${r.level[3]}</p><p>${minimum}</p>
     <p class="hint">Conservez ce bilan dans les sources de la marque avec les pièces qui étayent vos réponses. Il ne valide pas automatiquement la stratégie et ne commande aucune prestation.</p></div>`;
 }
-function save() {
-  if (!storageWritable) return;
-  try {
-    localStorage.setItem(storageKey, JSON.stringify({ ...state(), methodVersion: METHOD_VERSION }));
-    status.textContent = "Réponses conservées sur cet appareil. Aucune IA n’est nécessaire ; rien n’est envoyé par ce questionnaire.";
-  } catch {
-    status.textContent = "La sauvegarde locale est indisponible. Conservez le bilan en fichier avant de quitter la page.";
-  }
+function notice(text, degraded) {
+  status.textContent = text;
+  status.classList.toggle("alerte", degraded);
 }
-try {
-  const raw = localStorage.getItem(storageKey);
-  if (raw) {
-    const draft = readDraft(raw);
-    brand.value = draft.brand;
-    fields.forEach((field, i) => { field.value = draft.answers[i] === null ? "" : String(draft.answers[i]); });
-    showResult = draft.showResult;
-    status.textContent = "Votre dernier travail sur cet appareil a été repris. Les réponses restent déclaratives.";
+// localStorage peut être absent, nul ou lever une exception : le questionnaire reste en mémoire.
+const store = openDraftStore(() => window.localStorage, storageKey);
+if (store.draft) {
+  brand.value = store.draft.brand;
+  fields.forEach((field, i) => { field.value = store.draft.answers[i] === null ? "" : String(store.draft.answers[i]); });
+  showResult = store.draft.showResult;
+}
+if (store.access === "ok" && store.draft) {
+  notice("Votre dernier travail sur cet appareil a été repris. Les réponses restent déclaratives.", false);
+} else if (store.access === "readonly" && store.draft) {
+  notice("Votre dernier travail a été repris, mais ce navigateur refuse désormais la sauvegarde locale : la suite de votre progression ne sera pas conservée. " + keepFile, true);
+} else if (store.access === "unreadable") {
+  notice("Une sauvegarde locale illisible est présente ; elle reste intacte. Votre progression ne sera pas conservée sur cet appareil. " + keepFile, true);
+} else if (store.access !== "ok") {
+  notice("La sauvegarde locale est bloquée par ce navigateur. Le questionnaire reste utilisable, mais votre progression ne sera pas conservée. " + keepFile, true);
+}
+function save() {
+  if (store.access !== "ok") return;
+  if (store.save(state())) {
+    notice("Réponses conservées sur cet appareil. Aucune IA n’est nécessaire ; rien n’est envoyé par ce questionnaire.", false);
+  } else {
+    notice("La sauvegarde locale vient d’échouer : votre progression ne sera pas conservée. " + keepFile, true);
   }
-} catch {
-  storageWritable = false;
-  status.textContent = "La sauvegarde locale est illisible ou inaccessible. Elle reste préservée ; conservez vos nouvelles réponses en fichier.";
 }
 document.getElementById("diagnostic").addEventListener("input", () => { render(); save(); });
 document.getElementById("diagnostic").addEventListener("change", () => { render(); save(); });
@@ -79,3 +85,11 @@ download.addEventListener("click", () => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 render();
+// Copie hors ligne après une première visite en http(s). En file://, la page est déjà locale.
+window.addEventListener("load", () => {
+  try {
+    if (/^https?:$/.test(location.protocol) && "serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  } catch { /* La page reste utilisable sans copie hors ligne. */ }
+});

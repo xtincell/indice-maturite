@@ -62,6 +62,30 @@ function readDraft(raw) {
   }
   return { brand: d.brand, answers: d.answers, showResult: d.showResult };
 }
+// Brouillon local. Tout échec du stockage laisse le questionnaire utilisable en mémoire :
+// access vaut "ok", "readonly" (lecture seule), "blocked" (inaccessible) ou "unreadable"
+// (sauvegarde illisible, conservée sans réécriture). save() renvoie false sans lever.
+function openDraftStore(getStorage, key) {
+  const none = access => ({ access, draft: null, save: () => false });
+  let storage, raw;
+  try {
+    storage = getStorage();
+    if (!storage) return none("blocked");
+    raw = storage.getItem(key);
+  } catch { return none("blocked"); }
+  let draft = null;
+  if (raw) {
+    try { draft = readDraft(raw); } catch { return none("unreadable"); }
+  }
+  try {
+    storage.setItem(key + ":essai", "1");
+    storage.removeItem(key + ":essai");
+  } catch { return { access: "readonly", draft, save: () => false }; }
+  return { access: "ok", draft, save(value) {
+    try { storage.setItem(key, JSON.stringify({ ...value, methodVersion: METHOD_VERSION })); return true; }
+    catch { return false; }
+  } };
+}
 function markdownText(value) {
   return String(value).replace(/[\r\n]/g, " ").replace(/[\\`*_{}\[\]()#+.!<>|]/g, "\\$&");
 }
@@ -85,5 +109,5 @@ function toMarkdown({ brand, answers }, date = new Date().toISOString()) {
   lines.push("## Reprendre dans le dossier de marque", "", "Conserver ce fichier dans les sources du bon dossier La Fusée. Examiner les réponses, les pièces qui les étayent et la prochaine décision. Le dépôt d’une source ne l’approuve pas et ne lance pas d’IA.", "");
   return lines.join("\n");
 }
-return { AXES, NIV, METHOD_VERSION, TOTAL, diagnose, escapeHtml, validAnswers, readDraft, toMarkdown };
+return { AXES, NIV, METHOD_VERSION, TOTAL, diagnose, escapeHtml, validAnswers, readDraft, openDraftStore, toMarkdown };
 });
