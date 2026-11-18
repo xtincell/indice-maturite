@@ -12,6 +12,12 @@
   n’admet que ces adresses.
 - `tests/charte.test.cjs` applique au CSS de la page les clauses couleur et
   police de la règle d’adhérence de la charte.
+- Polices de la charte (Clash Display, Satoshi) servies par l’API Fontshare,
+  sous la licence ITF FFL : c’est la seule ressource externe, une feuille de
+  style, sans script ni envoi de réponse. Les fichiers de police ne sont pas
+  copiés dans ce dépôt public : la licence interdit de les y déposer. Sans
+  réseau, la page garde ses polices système ; la copie hors ligne ne les
+  conserve pas.
 
 ## 2026-11-11 — Ouverture hors ligne et repli sans stockage
 

@@ -25,8 +25,9 @@ technologie reste derrière le rideau ; ici, elle est le livrable.
 ## Lancer
 
 Ouvrir `index.html` avec `diagnostic.js` et `app.js` à côté. Aucun serveur, aucune
-installation, aucun fournisseur IA, aucune ressource externe (polices système,
-scripts locaux) : la page fonctionne en `file://` sans réseau. Servie en ligne,
+installation, aucun fournisseur IA, une seule ressource externe : la feuille des
+polices de la charte UPgraders (Clash Display et Satoshi, API Fontshare). Sans
+réseau, la page garde ses polices système et fonctionne en `file://`. Servie en ligne,
 elle garde après la première visite une copie de ses fichiers (`sw.js`, réseau
 d'abord) et se rouvre sans réseau ; une version publiée remplace la copie dès que
 le réseau revient. Aucune réponse n'est mise en cache ni envoyée.
@@ -43,8 +44,8 @@ du bon dossier La Fusée, sans nouveau référentiel de scores. Le fichier est u
 déclaration à examiner, pas une approbation ni une demande de génération.
 
 Vérification sans dépendance (CI) : `node --test tests/*.test.cjs` — calcul,
-empreinte des questions, stockage indisponible, absence de ressource externe et
-copie hors ligne. Recette navigateur hors CI, Playwright requis mais non versionné :
+empreinte des questions, stockage indisponible, aucune ressource externe hors la
+feuille des polices, adhérence à la charte et copie hors ligne. Recette navigateur hors CI, Playwright requis mais non versionné :
 `NODE_PATH=<node_modules contenant playwright> node tests/recette-navigateur.cjs`
 (file://, réseau coupé, serveur arrêté, mise à jour publiée, trois indisponibilités
 du stockage, sauvegarde illisible, parcours complet jusqu'au score).

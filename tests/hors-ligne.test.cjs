@@ -51,13 +51,17 @@ function loadWorker({ online = () => true, stores = new Map() } = {}) {
 // Le bandeau et le pied UPgraders mènent aux autres outils : un lien de navigation
 // ne charge rien. Seules ces adresses sont admises, et seulement dans un <a href>.
 const NAVIGATION = /(<a\b[^>]*?)\shref="https:\/\/(?:powerupgraders\.com|galahad\.powerupgraders\.com|la-barre-vitrine\.powerupgraders\.com|xtincell\.github\.io\/indice-maturite)\/"/g;
-const sansNavigation = html => html.replace(NAVIGATION, "$1");
+const sansNavigation = html => html.replace(NAVIGATION, "$1").replace(POLICES, "");
+// Les polices de la charte UPgraders (Clash Display, Satoshi) viennent de l'API Fontshare :
+// cette feuille, et elle seule. Sans réseau, la page garde ses polices système.
+const POLICES = '<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=clash-display@1&amp;f[]=satoshi@1&amp;display=swap">';
 
 test("served files load no external resource and send nothing", () => {
   for (const f of SERVED) {
     const texte = f === "index.html" ? sansNavigation(read(f)) : read(f);
     assert.doesNotMatch(texte, /(?:https?:)?\/\/[a-z0-9-]+(?:\.[a-z0-9-]+)+/i, `${f} : URL externe`);
   }
+  assert.equal(read("index.html").split(POLICES).length - 1, 1, "une seule feuille de polices");
   const html = sansNavigation(read("index.html"));
   assert.doesNotMatch(html, /@import|url\(|<link\b|<iframe\b|<img\b/i);
   for (const [, ref] of html.matchAll(/\b(?:src|href)\s*=\s*["']([^"']+)["']/gi)) {
