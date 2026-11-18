@@ -39,13 +39,23 @@ function serveur() {
 }
 const arreter = srv => new Promise(r => { srv.closeAllConnections(); srv.close(r); });
 
+// Les polices de la charte UPgraders viennent de Fontshare. La recette coupe ce réseau comme
+// tout autre : la page doit rester saine en polices système. Ces requêtes, et l'erreur de
+// chargement qu'elles laissent en console, sont notées à part.
+const POLICES = /^https:\/\/(?:api|cdn)\.fontshare\.com\//;
 function journal(page, j) {
-  page.on("console", m => { if (m.type() === "error") j.console.push(m.text()); });
+  page.on("console", m => {
+    if (m.type() !== "error") return;
+    (POLICES.test((m.location() || {}).url || "") ? j.polices : j.console).push(m.text());
+  });
   page.on("pageerror", e => j.erreurs.push(String(e && e.message || e)));
-  page.on("request", r => { if (!/^(file:|blob:|data:|http:\/\/127\.0\.0\.1)/.test(r.url())) j.externes.push(r.url()); });
+  page.on("request", r => {
+    if (/^(file:|blob:|data:|http:\/\/127\.0\.0\.1)/.test(r.url())) return;
+    (POLICES.test(r.url()) ? j.polices : j.externes).push(r.url());
+  });
 }
 async function contexte(browser, init) {
-  const j = { console: [], erreurs: [], externes: [] };
+  const j = { console: [], erreurs: [], externes: [], polices: [] };
   const ctx = await browser.newContext({ acceptDownloads: true });
   await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.abort());
   if (init) await ctx.addInitScript(init);

@@ -1,5 +1,24 @@
 # Journal de l’indice
 
+## 2026-11-18 — Sous la charte UPgraders
+
+- Couleurs de la charte UPgraders (jetons copiés de ADVE-project,
+  `docs/design-system/upgraders`, commit `c5811c9`), sombre par défaut : rouge
+  fusée pour l’action, or pour le niveau atteint. Questions, textes, calcul et
+  ordre des sections inchangés.
+- Bandeau et pied communs aux trois pages publiques (Indice, vitrine de La
+  Barre, Galahad), qui ramènent à powerupgraders.com et aux autres outils. Ce
+  sont des liens : rien n’est chargé, et le test des ressources externes
+  n’admet que ces adresses.
+- `tests/charte.test.cjs` applique au CSS de la page les clauses couleur et
+  police de la règle d’adhérence de la charte.
+- Polices de la charte (Clash Display, Satoshi) servies par l’API Fontshare,
+  sous la licence ITF FFL : c’est la seule ressource externe, une feuille de
+  style, sans script ni envoi de réponse. Les fichiers de police ne sont pas
+  copiés dans ce dépôt public : la licence interdit de les y déposer. Sans
+  réseau, la page garde ses polices système ; la copie hors ligne ne les
+  conserve pas.
+
 ## 2026-11-11 — Ouverture hors ligne et repli sans stockage
 
 - Aucune ressource externe n’était chargée ; la page s’ouvrait déjà en `file://`.
